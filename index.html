@@ -133,21 +133,29 @@
                     console.log(`Filtrando dados para: ${selectedDependency}`);
 
                     // Iterar sobre as features da camada PTsLotes e aplicar o filtro
-                    PTsLotes_1_style.js.getSource().getFeatures().forEach(feature => {
+                    PTsLotes_1.getSource().getFeatures().forEach(feature => {
                         const featureName = feature.get('name'); // Campo 'name' da camada
 
                         // Verificar se o 'name' corresponde à dependência selecionada
                         if (featureName === selectedDependency) {
                             feature.setStyle(null); // Exibir feature
                         } else {
-                            feature.setStyle(new ol.style.Style({})); // Ocultar feature
+                            feature.setStyle(new ol.style.Style({
+                                fill: new ol.style.Fill({
+                                    color: 'transparent'
+                                }),
+                                stroke: new ol.style.Stroke({
+                                    color: 'transparent',
+                                    width: 0
+                                })
+                            }));
                         }
                     });
                 } else {
                     console.log('Exibindo todos os dados');
                     // Exibir todas as features se nenhuma dependência estiver selecionada
                     PTsLotes_1.getSource().getFeatures().forEach(feature => {
-                        feature.setStyle(null);
+                        feature.setStyle(null); // Remover qualquer estilo oculto
                     });
                 }
             }
