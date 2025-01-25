@@ -111,7 +111,7 @@
                 const dependencies = [
                     "LU-PTM1105-SIMIONEIII",
                     "LU-PTM1105-SIMIONEII",
-                    "LU-PTM1105-SIMIONEIII"
+                    "LU-PTM1105-PT2373"
                 ];
 
                 const dependencySelect = document.getElementById('dependency-select');
@@ -133,7 +133,7 @@
                     console.log(`Filtrando dados para: ${selectedDependency}`);
 
                     // Iterar sobre as features da camada PTsLotes e aplicar o filtro
-                    PTsLotes_1.getSource().getFeatures().forEach(feature => {
+                    PTsLotes_1_style.js.getSource().getFeatures().forEach(feature => {
                         const featureName = feature.get('name'); // Campo 'name' da camada
 
                         // Verificar se o 'name' corresponde à dependência selecionada
