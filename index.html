@@ -124,16 +124,30 @@
                 });
             }
 
-            // Função para filtrar os dados com base na seleção
+            // Função para filtrar os dados da camada PTsLotes com base no campo 'name'
             function filterData() {
                 const selectedDependency = document.getElementById('dependency-select').value;
 
                 if (selectedDependency) {
                     console.log(`Filtrando dados para: ${selectedDependency}`);
-                    // Lógica de filtro dos dados baseada na dependência selecionada
+
+                    // Iterar sobre as features da camada PTsLotes e aplicar o filtro
+                    PTsLotes_1.getSource().getFeatures().forEach(feature => {
+                        const featureName = feature.get('name'); // Campo 'name' da camada
+
+                        // Verificar se o 'name' corresponde à dependência selecionada
+                        if (featureName === selectedDependency) {
+                            feature.setStyle(null); // Exibir feature
+                        } else {
+                            feature.setStyle(new ol.style.Style({})); // Ocultar feature
+                        }
+                    });
                 } else {
                     console.log('Exibindo todos os dados');
-                    // Lógica para exibir todos os dados
+                    // Exibir todas as features se nenhuma dependência estiver selecionada
+                    PTsLotes_1.getSource().getFeatures().forEach(feature => {
+                        feature.setStyle(null);
+                    });
                 }
             }
 
