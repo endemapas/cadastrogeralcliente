@@ -13,21 +13,25 @@
 
         <!-- Estilos -->
         <link rel="stylesheet" href="./resources/ol.css">
+        <link rel="stylesheet" href="resources/fontawesome-all.min.css">
+        <link rel="stylesheet" type="text/css" href="resources/horsey.min.css">
+        <link rel="stylesheet" type="text/css" href="resources/ol3-search-layer.min.css">
+        <link href="resources/ol-geocoder.min.css" rel="stylesheet">
         <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
         <link rel="stylesheet" href="./resources/qgis2web.css">
         <style>
             html, body {
+                background-color: #ffffff;
                 margin: 0;
                 padding: 0;
                 width: 100%;
                 height: 100%;
-                background-color: #ffffff;
             }
             #header-container {
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                background-color: #f0f0f0;
+                background-color: #f0f0f0; /* Fundo opcional */
                 padding: 20px;
             }
             #header-container img {
@@ -36,40 +40,14 @@
                 border-radius: 8px;
                 box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             }
-            #map-container {
-                position: relative;
-                width: 100%;
-                height: calc(100% - 150px); /* Ajusta a altura para incluir o painel de pesquisa */
-            }
             #map {
                 width: 100%;
-                height: 100%;
+                height: calc(100% - 100px); /* Ajusta a altura para não sobrepor a imagem */
             }
-            #search-panel {
-                position: absolute;
-                top: 10px;
-                left: 10px;
-                z-index: 1000;
-                background: white;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                padding: 10px;
-                width: 300px;
-            }
-            #search-panel label {
-                font-weight: bold;
-            }
-            #search-panel select {
-                width: 100%;
-                padding: 5px;
-                margin-top: 5px;
-                margin-bottom: 10px;
-                border-radius: 4px;
-                border: 1px solid #ccc;
-            }
-            .ol-control {
-                background: rgba(255, 255, 255, 0.8);
+            .ol-control > * {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                border-radius: 0px;
             }
         </style>
     </head>
@@ -79,85 +57,36 @@
             <img src="Imagem Projecto/PPCCBT (1).jpg" alt="Imagem Projecto">
         </div>
 
-        <!-- Contêiner do Mapa -->
-        <div id="map-container">
-            <!-- Painel de Pesquisa -->
-            <div id="search-panel">
-                <label for="dependencia">Dependência (SAP dos Postos de Transformação):</label>
-                <select id="dependencia">
-                    <option value="" selected>Selecione um posto de transformação</option>
-                </select>
-                <button id="filter-button">Filtrar</button>
+        <!-- Mapa -->
+        <div id="map">
+            <div id="popup" class="ol-popup">
+                <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+                <div id="popup-content"></div>
             </div>
-            <!-- Mapa -->
-            <div id="map"></div>
         </div>
 
         <!-- Scripts -->
         <script src="resources/qgis2web_expressions.js"></script>
         <script src="resources/proj4.js"></script>
         <script>proj4.defs('EPSG:4326','+proj=longlat +datum=WGS84 +no_defs');</script>
+        <script src="./resources/functions.js"></script>
         <script src="./resources/ol.js"></script>
+        <script src="resources/horsey.min.js"></script>
+        <script src="resources/ol3-search-layer.js"></script>
         <script src="./resources/ol-layerswitcher.js"></script>
-        <script src="./layers/PTsLotes_1.js"></script>
-        <script src="./layers/ArmriosGeral_2.js"></script>
-        <script src="./layers/Apoios_3.js"></script>
-        <script src="./layers/ClientesGeral_4.js"></script>
-        <script src="./layers/BairrosLotes_5.js"></script>
-        <script src="./layers/layers.js"></script>
-        <script>
-            // Inicializar o mapa
-            const map = new ol.Map({
-                target: 'map',
-                layers: [
-                    layer_PT, // Camada de Postos de Transformação
-                    layer_Armarios, // Armários
-                    layer_Apoios,   // Apoios
-                    layer_Clientes, // Clientes
-                    layer_Bairros   // Bairros
-                ],
-                view: new ol.View({
-                    center: ol.proj.fromLonLat([13.2, -8.8]), // Coordenadas iniciais (alterar conforme necessário)
-                    zoom: 12
-                }),
-                controls: ol.control.defaults().extend([
-                    new ol.control.LayerSwitcher() // Adiciona painel de camadas
-                ])
-            });
-
-            // Preencher a lista de dependências (SAP)
-            const dependenciaSelect = document.getElementById('dependencia');
-            const sapValues = new Set(); // Evitar duplicatas
-
-            layer_PT.getSource().forEachFeature(feature => {
-                const sap = feature.get('SAP'); // Obtém o campo "SAP" dos postos de transformação
-                if (sap && !sapValues.has(sap)) {
-                    sapValues.add(sap);
-                    const option = document.createElement('option');
-                    option.value = sap;
-                    option.textContent = sap;
-                    dependenciaSelect.appendChild(option);
-                }
-            });
-
-            // Filtrar camadas com base na dependência selecionada
-            document.getElementById('filter-button').addEventListener('click', () => {
-                const selectedDependencia = dependenciaSelect.value;
-                if (selectedDependencia) {
-                    [layer_PT, layer_Armarios, layer_Apoios, layer_Clientes, layer_Bairros].forEach(layer => {
-                        layer.getSource().forEachFeature(feature => {
-                            const dependValue = feature.get('SAP'); // Assumindo que todas camadas têm o campo "SAP"
-                            feature.setStyle(
-                                dependValue === selectedDependencia
-                                    ? null // Mostra
-                                    : new ol.style.Style({ display: 'none' }) // Oculta
-                            );
-                        });
-                    });
-                } else {
-                    alert('Por favor, selecione uma dependência para filtrar.');
-                }
-            });
-        </script>
+        <script src="resources/ol-geocoder.js"></script>
+        <script src="layers/PTsLotes_1.js"></script>
+        <script src="layers/ArmriosGeral_2.js"></script>
+        <script src="layers/Apoios_3.js"></script>
+        <script src="layers/ClientesGeral_4.js"></script>
+        <script src="layers/BairrosLotes_5.js"></script>
+        <script src="styles/PTsLotes_1_style.js"></script>
+        <script src="styles/ArmriosGeral_2_style.js"></script>
+        <script src="styles/Apoios_3_style.js"></script>
+        <script src="styles/ClientesGeral_4_style.js"></script>
+        <script src="styles/BairrosLotes_5_style.js"></script>
+        <script src="./layers/layers.js" type="text/javascript"></script>
+        <script src="./resources/Autolinker.min.js"></script>
+        <script src="./resources/qgis2web.js"></script>
     </body>
 </html>
