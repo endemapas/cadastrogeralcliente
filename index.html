@@ -65,12 +65,7 @@
         </div>
 
         <!-- Mapa -->
-        <div id="map">
-            <div id="popup" class="ol-popup">
-                <a href="#" id="popup-closer" class="ol-popup-closer"></a>
-                <div id="popup-content"></div>
-            </div>
-        </div>
+        <div id="map"></div>
 
         <!-- Lista de dependências -->
         <div id="dependency-list">
@@ -106,6 +101,8 @@
         <script src="./resources/qgis2web.js"></script>
 
         <script>
+            var map, PTsLotesLayer;
+
             // Função para carregar dependências de todas as camadas
             function loadDependencies() {
                 const dependencies = [
@@ -132,37 +129,54 @@
                 if (selectedDependency) {
                     console.log(`Filtrando dados para: ${selectedDependency}`);
 
-                    // Iterar sobre as features da camada PTsLotes e aplicar o filtro
+                    PTsLotesLayer.getSource().clear(); // Limpa os dados anteriores
+
+                    // Adicionar apenas as features que correspondem ao filtro
                     PTsLotes_1.getSource().getFeatures().forEach(feature => {
                         const featureName = feature.get('name'); // Campo 'name' da camada
 
-                        // Verificar se o 'name' corresponde à dependência selecionada
+                        // Se o 'name' corresponder ao filtro, adicione a feature ao mapa
                         if (featureName === selectedDependency) {
-                            feature.setStyle(null); // Exibir feature
-                        } else {
-                            feature.setStyle(new ol.style.Style({
-                                fill: new ol.style.Fill({
-                                    color: 'transparent'
-                                }),
-                                stroke: new ol.style.Stroke({
-                                    color: 'transparent',
-                                    width: 0
-                                })
-                            }));
+                            PTsLotesLayer.getSource().addFeature(feature);
                         }
                     });
                 } else {
                     console.log('Exibindo todos os dados');
-                    // Exibir todas as features se nenhuma dependência estiver selecionada
+                    PTsLotesLayer.getSource().clear(); // Limpar camada filtrada
+
+                    // Adicionar todas as features ao mapa
                     PTsLotes_1.getSource().getFeatures().forEach(feature => {
-                        feature.setStyle(null); // Remover qualquer estilo oculto
+                        PTsLotesLayer.getSource().addFeature(feature);
                     });
                 }
             }
 
-            // Chamar função ao carregar o mapa
+            // Inicialização do mapa e camadas
             document.addEventListener('DOMContentLoaded', () => {
                 loadDependencies();
+
+                // Criação da camada PTsLotes com dados do arquivo
+                PTsLotesLayer = new ol.layer.Vector({
+                    source: new ol.source.Vector({
+                        features: PTsLotes_1.getSource().getFeatures()
+                    }),
+                    style: PTsLotes_1_style // Estilo da camada
+                });
+
+                // Inicializando o mapa
+                map = new ol.Map({
+                    target: 'map',
+                    layers: [
+                        new ol.layer.Tile({
+                            source: new ol.source.OSM()
+                        }),
+                        PTsLotesLayer
+                    ],
+                    view: new ol.View({
+                        center: [0, 0],
+                        zoom: 10
+                    })
+                });
             });
         </script>
     </body>
