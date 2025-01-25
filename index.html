@@ -31,7 +31,7 @@
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                background-color: #f0f0f0; /* Fundo opcional */
+                background-color: #f0f0f0;
                 padding: 20px;
             }
             #header-container img {
@@ -42,7 +42,14 @@
             }
             #map {
                 width: 100%;
-                height: calc(100% - 100px); /* Ajusta a altura para não sobrepor a imagem */
+                height: calc(100% - 150px);
+            }
+            #dependency-list {
+                padding: 10px;
+                background-color: #f9f9f9;
+                border-top: 1px solid #ddd;
+                height: 50px;
+                overflow-y: auto;
             }
             .ol-control > * {
                 background-color: #ffffff !important;
@@ -64,6 +71,9 @@
                 <div id="popup-content"></div>
             </div>
         </div>
+
+        <!-- Lista de dependências -->
+        <div id="dependency-list"></div>
 
         <!-- Scripts -->
         <script src="resources/qgis2web_expressions.js"></script>
@@ -88,5 +98,33 @@
         <script src="./layers/layers.js" type="text/javascript"></script>
         <script src="./resources/Autolinker.min.js"></script>
         <script src="./resources/qgis2web.js"></script>
+
+        <script>
+            // Função para carregar dependências de todas as camadas
+            function loadDependencies() {
+                const dependencies = [
+                    "LU-PTM1105-SIMIONEIII",
+                    "LU-PTM1105-SIMIONEII",
+                    "LU-PTM1105-SIMIONEIII"
+                ];
+
+                const dependencyList = document.getElementById('dependency-list');
+
+                // Criar lista e preencher
+                const ul = document.createElement('ul');
+                dependencies.forEach(dep => {
+                    const li = document.createElement('li');
+                    li.textContent = dep;
+                    ul.appendChild(li);
+                });
+
+                dependencyList.appendChild(ul);
+            }
+
+            // Chamar função ao carregar o mapa
+            document.addEventListener('DOMContentLoaded', () => {
+                loadDependencies();
+            });
+        </script>
     </body>
 </html>
