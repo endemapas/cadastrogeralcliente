@@ -13,12 +13,7 @@
 
         <!-- Estilos -->
         <link rel="stylesheet" href="./resources/ol.css">
-        <link rel="stylesheet" href="resources/fontawesome-all.min.css">
-        <link rel="stylesheet" type="text/css" href="resources/horsey.min.css">
-        <link rel="stylesheet" type="text/css" href="resources/ol3-search-layer.min.css">
-        <link href="resources/ol-geocoder.min.css" rel="stylesheet">
         <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
-        <link rel="stylesheet" href="./resources/qgis2web.css">
         <style>
             html, body {
                 background-color: #ffffff;
@@ -84,10 +79,9 @@
         <div id="map-container">
             <!-- Painel de Pesquisa -->
             <div id="search-panel">
-                <label for="dependencia">Dependência (Posto de Transformação):</label>
+                <label for="dependencia">Dependência (SAP dos Postos de Transformação):</label>
                 <select id="dependencia">
                     <option value="" selected>Selecione um posto de transformação</option>
-                    <!-- Os valores serão preenchidos dinamicamente -->
                 </select>
                 <button id="filter-button">Filtrar</button>
             </div>
@@ -99,61 +93,54 @@
         <script src="resources/qgis2web_expressions.js"></script>
         <script src="resources/proj4.js"></script>
         <script>proj4.defs('EPSG:4326','+proj=longlat +datum=WGS84 +no_defs');</script>
-        <script src="./resources/functions.js"></script>
         <script src="./resources/ol.js"></script>
-        <script src="resources/horsey.min.js"></script>
-        <script src="resources/ol3-search-layer.js"></script>
         <script src="./resources/ol-layerswitcher.js"></script>
-        <script src="resources/ol-geocoder.js"></script>
-        <script src="layers/PTsLotes_1.js"></script>
-        <script src="layers/ArmriosGeral_2.js"></script>
-        <script src="layers/Apoios_3.js"></script>
-        <script src="layers/ClientesGeral_4.js"></script>
-        <script src="layers/BairrosLotes_5.js"></script>
-        <script src="styles/PTsLotes_1_style.js"></script>
-        <script src="styles/ArmriosGeral_2_style.js"></script>
-        <script src="styles/Apoios_3_style.js"></script>
-        <script src="styles/ClientesGeral_4_style.js"></script>
-        <script src="styles/BairrosLotes_5_style.js"></script>
-        <script src="./layers/layers.js" type="text/javascript"></script>
-        <script src="./resources/Autolinker.min.js"></script>
-        <script src="./resources/qgis2web.js"></script>
+        <script src="./layers/PTsLotes_1.js"></script>
+        <script src="./layers/layers.js"></script>
         <script>
-            // Inicializar o mapa
+            // Inicializar o mapa com camadas e painel de camadas
             const map = new ol.Map({
                 target: 'map',
-                layers: [layer_PT, layer_Armarios, layer_Apoios, layer_Clientes, layer_Bairros],
+                layers: [
+                    layer_PT, // Camada de Postos de Transformação
+                    layer_Armarios,
+                    layer_Apoios,
+                    layer_Clientes,
+                    layer_Bairros
+                ],
                 view: new ol.View({
-                    center: ol.proj.fromLonLat([0, 0]),
-                    zoom: 10
-                })
+                    center: ol.proj.fromLonLat([13.2, -8.8]), // Coordenadas iniciais (alterar conforme necessário)
+                    zoom: 12
+                }),
+                controls: ol.control.defaults().extend([
+                    new ol.control.LayerSwitcher() // Painel de camadas
+                ])
             });
 
-            // Dados simulados dos postos de transformação
-            const postos = [
-                { id: 'PT01', name: 'Posto de Transformação 01' },
-                { id: 'PT02', name: 'Posto de Transformação 02' },
-                { id: 'PT03', name: 'Posto de Transformação 03' }
-            ];
-
-            // Preencher o dropdown de dependências
+            // Preencher a lista de dependências (SAP)
             const dependenciaSelect = document.getElementById('dependencia');
-            postos.forEach(pt => {
-                const option = document.createElement('option');
-                option.value = pt.id;
-                option.textContent = pt.name;
-                dependenciaSelect.appendChild(option);
+            const sapValues = new Set(); // Para evitar duplicatas
+
+            layer_PT.getSource().forEachFeature(feature => {
+                const sap = feature.get('SAP'); // Assumindo que o campo na camada é "SAP"
+                if (sap && !sapValues.has(sap)) {
+                    sapValues.add(sap);
+                    const option = document.createElement('option');
+                    option.value = sap;
+                    option.textContent = sap;
+                    dependenciaSelect.appendChild(option);
+                }
             });
 
-            // Filtrar camadas ao selecionar uma dependência
+            // Filtrar camadas com base na dependência selecionada
             document.getElementById('filter-button').addEventListener('click', () => {
                 const selectedDependencia = dependenciaSelect.value;
                 if (selectedDependencia) {
-                    // Filtrar elementos das camadas
                     [layer_PT, layer_Armarios, layer_Apoios, layer_Clientes, layer_Bairros].forEach(layer => {
                         layer.getSource().forEachFeature(feature => {
+                            const dependValue = feature.get('SAP'); // Assumindo que todas camadas têm o campo "SAP"
                             feature.setStyle(
-                                feature.get('Dependencia') === selectedDependencia
+                                dependValue === selectedDependencia
                                     ? null
                                     : new ol.style.Style({ display: 'none' })
                             );
