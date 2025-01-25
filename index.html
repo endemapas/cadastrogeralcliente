@@ -73,7 +73,12 @@
         </div>
 
         <!-- Lista de dependências -->
-        <div id="dependency-list"></div>
+        <div id="dependency-list">
+            <label for="dependency-select">Filtrar Dependências:</label>
+            <select id="dependency-select" onchange="filterData()">
+                <option value="">Todas</option>
+            </select>
+        </div>
 
         <!-- Scripts -->
         <script src="resources/qgis2web_expressions.js"></script>
@@ -108,17 +113,28 @@
                     "LU-PTM1105-SIMIONEIII"
                 ];
 
-                const dependencyList = document.getElementById('dependency-list');
+                const dependencySelect = document.getElementById('dependency-select');
 
-                // Criar lista e preencher
-                const ul = document.createElement('ul');
+                // Adicionar opções ao campo de seleção
                 dependencies.forEach(dep => {
-                    const li = document.createElement('li');
-                    li.textContent = dep;
-                    ul.appendChild(li);
+                    const option = document.createElement('option');
+                    option.value = dep;
+                    option.textContent = dep;
+                    dependencySelect.appendChild(option);
                 });
+            }
 
-                dependencyList.appendChild(ul);
+            // Função para filtrar os dados com base na seleção
+            function filterData() {
+                const selectedDependency = document.getElementById('dependency-select').value;
+
+                if (selectedDependency) {
+                    console.log(`Filtrando dados para: ${selectedDependency}`);
+                    // Lógica de filtro dos dados baseada na dependência selecionada
+                } else {
+                    console.log('Exibindo todos os dados');
+                    // Lógica para exibir todos os dados
+                }
             }
 
             // Chamar função ao carregar o mapa
